@@ -3,7 +3,7 @@
       <div class="container">
         <div id="content" class="col-sm-12 col">
           <div class="menu-header">
-                <dropCityTitle :title="head"/>
+                <dropTitle :title="head"/>
                 <button id="sBu" type="button" v-on:click="clickButton()">
                     <img src="/static/imgs/chevron-icon.svg" class="chevron_icon" v-bind:class="{ animate_chevron: menuOpened }">
                     <span class="textSbu" v-if="selectedItems == 0">
@@ -22,7 +22,7 @@
                     <div class="clear line"></div>
                     <div class="content">
                         <div class="col-sm-12">
-                            <dropCityType :name="inputType"/>
+                            <dropType :name="inputType"/>
                             <div class="custom-control custom-checkbox mt-3" v-for="(key, value) in filteredList" :key="key.id">
                                 <input class="custom-control-input" type="checkbox" :id="'customCheck'+key.id" :value="key.id" v-on:click="toggleSelect(key.id, value)" v-model="listItems" :checked="key.selected">
                                 <label class="custom-control-label" :for="'customCheck'+key.id">{{key.name}}</label>
@@ -46,7 +46,7 @@
 
 <script>
 
-    const dropCityTitle = {
+    const dropTitle = {
         template: '<h1>{{title}}</h1>',
         props: {
             title: {
@@ -55,7 +55,7 @@
             }
         },
     }
-    const dropCityType = {
+    const dropType = {
         template: '<input type="hidden" :value="name"/>',
         props: {
             name: {
@@ -68,8 +68,8 @@
     // Initiate
     export default {
         components: {
-            dropCityTitle,
-            dropCityType
+            dropTitle,
+            dropType
         },
         data () {
             /*
