@@ -3,26 +3,22 @@
       <div class="container">
         <div id="content" class="col-sm-12 col">
           <div class="menu-header">
-                <dropTitle :title="head"/>
+                <props-component :title="$store.state.head" :name="$store.state.inputType"/>
                 <button id="sBu" type="button" v-on:click="clickButton()">
-                    <img src="/static/imgs/chevron-icon.svg" class="chevron_icon" v-bind:class="{ animate_chevron: menuOpened }">
-                    <span class="textSbu" v-if="selectedItems == 0">
-                        Не выбрано
-                    </span>
-                    <span class="textSbu" v-else>
-                        Выбрано: {{getSelected}}
+                    <img src="/static/imgs/chevron-icon.svg" class="chevron_icon" v-bind:class="{ animate_chevron: $store.state.menuOpened }">
+                   <span class="textSbu">
+                        {{getSelected}}
                     </span>
                 </button>
-                <div id="itemsBody" v-if="menuOpened">
+                <div id="itemsBody" v-if="$store.state.menuOpened">
                     <div class="content_head">
                         <img src="/static/imgs/search-icon.svg" class="search_icon">
-                        <input id="iBu" class="form-control" type="text" v-model="search" placeholder="Поиск">
+                        <input id="iBu" class="form-control" type="text" v-model="$store.state.search" placeholder="Поиск">
                     </div>
 
                     <div class="clear line"></div>
                     <div class="content">
                         <div class="col-sm-12">
-                            <dropType :name="inputType"/>
                             <div class="custom-control custom-checkbox mt-3" v-for="(key, value) in filteredList" :key="key.id">
                                 <input class="custom-control-input" type="checkbox" :id="'customCheck'+key.id" :value="key.id" v-on:click="toggleSelect(key.id, value)" v-model="listItems" :checked="key.selected">
                                 <label class="custom-control-label" :for="'customCheck'+key.id">{{key.name}}</label>
@@ -33,7 +29,7 @@
                     <div class="line clear"></div>
                     <div class="action">
                         <label>
-                            <input v-if="!selectAction" type="checkbox" id="sAll" class="switchButton form-control" value="Отметить все" v-model="select">
+                            <input v-if="!$store.state.selectAction" type="checkbox" id="sAll" class="switchButton form-control" value="Отметить все" v-model="select">
                             <input v-else type="checkbox" id="sAll" class="switchButton form-control" value="Отменить все" v-model="unselect">
                         </label>
                     </div>
@@ -46,79 +42,89 @@
 
 <script>
 
-    const dropTitle = {
-        template: '<h1>{{title}}</h1>',
-        props: {
-            title: {
-                type: String,
-                required: true
-            }
-        },
-    }
-    const dropType = {
-        template: '<input type="hidden" :value="name"/>',
-        props: {
-            name: {
-                type: String,
-                required: true
-            }
-        },
-    }
+    // Initiate component
 
-    // Initiate
-    export default {
-        components: {
-            dropTitle,
-            dropType
+    import Vue from 'vue'
+    import Vuex from 'vuex';
+    /*
+        Vuex is a state management pattern + library for Vue.js applications
+        It serves as a centralized store for all the components in an application
+    */
+    Vue.use(Vuex);
+    
+    import PropsComponent from './PropsComponent.vue';
+    
+    const store = new Vuex.Store({
+        /*
+            Define a few store variables for this component
+        */
+        state: {
+            head: "Города",
+            inputType: "city",
+            maxWords: 500, // The number of max words
+            texts : [], // List of all the generated words
+            letters : "абвгдеёжзийклмнопрстуфхцчшщъыьэюя", // Russian alphabets
+            wordLength : Math.floor(Math.random() * 7) + 3, // Random length number of each word to be generated
+            search: '', // Model variable that will save the search input value
+            min_symbols: 3, // The minimum number of words to be typed to begin the search
+            selectedItems: 0, // How many items have been selected
+            menuOpened: false, // Boolean variable value to check if the list menu is opened or closed
+            selectAction: false, // Boolean variable to check if all items are selected
+            username: 'Нуждин Вячеслав' // Default app username
         },
-        data () {
-            /*
-                Define a few variables to handle the generation of words in russian alphabets
-            */
-            let maxWords = 500 ; // The number of max words
-            let texts = []; // List of all the generated words
-            let letters = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"; // Russian alphabets
-            let wordLength = Math.floor(Math.random() * 7) + 3; // Random length number of each word to be generated
-            
-            // Generate random words
-            for (var i = 1; i < maxWords; i++){
-                let word = "";
-                for(var j = 1; j < wordLength; j++) {
-                    word += letters.charAt(Math.floor(Math.random() * letters.length));
-                }
-                texts.push(
-                    {
-                        id:i,
-                        name:word,
-                        selected: false
+        actions: {
+            generate(state) {
+                // Generate random words
+                for (var i = 1; i < store.state.maxWords; i++){
+                    let word = "";
+                    for(var j = 1; j < store.state.wordLength; j++) {
+                        word += store.state.letters.charAt(Math.floor(Math.random() * store.state.letters.length));
                     }
-                )
+                    store.state.texts.push(
+                        {
+                            id:i,
+                            name:word,
+                            selected: false
+                        }
+                    )
+                }
+                this.selections = store.state.texts;
+                return this.selections;
             }
+        },
+        getters: {
+            getWordsList: state => {
+                return state.selections;
+            }
+        }
+    });
 
-            let randomWords = texts // Assign the words list to the data object variable randomWords
-
-            // Return data object
+    export default {
+        name: 'cities-dropdown',
+        components: {
+            PropsComponent
+        },
+        // Include store with component
+        store: store,
+        data () {
             return {
-                head: "Города",
-                inputType: "city",
-                search: '', // Model variable that will save the search input value
-                min_symbols: 3, // The minimum number of words to be typed to begin the search
-                selectedItems: 0, // How many items have been selected
-                menuOpened: false, // Boolean variable value to check if the list menu is opened or closed
-                selectAction: false, // Boolean variable to check if all items are selected
-                listItems: [], // A list that will contain all the selected items by clicking the select all button
-                username: 'Нуждин Вячеслав', // Default app username
-                selections: randomWords
-            }
+                selections: null,
+                listItems: []
+            };
+        },
+        mounted: function() {
+            // This component just got created
+            // promise have to be returned.
+            store.dispatch("generate").then(data => {
+                this.selections = data;
+            }, error => {
+                this.selections = [];
+            })
         },
         methods: {
             // Toggling the menu open and close
             clickButton: function(){
-                if(this.menuOpened){
-                    this.menuOpened = false;
-                } else {
-                    this.menuOpened = true;
-                }
+                store.state.menuOpened = !store.state.menuOpened
             },
             // Get all the selected items from the menu
             getSelectedItemsLength (){
@@ -135,11 +141,11 @@
                     if(this.selections[index-1].selected == true){
                         this.selections[index-1].selected = false;
                         allItems.splice(this.selections[index-1].id);
-                        return this.selectedItems = this.getNotSelectedItemsLength;
+                        return store.state.selectedItems = this.getNotSelectedItemsLength;
                     } else {
                         this.selections[index-1].selected = true;
                         allItems.push(this.selections[index-1].id);
-                        return this.selectedItems = this.getSelectedItemsLength;
+                        return store.state.selectedItems = this.getSelectedItemsLength;
                     }
                     this.listItems = allItems;
                 }
@@ -165,8 +171,8 @@
                                 allItems.push(item.id);
                             });
                         }
-                        if(!this.selectAction){
-                            this.selectAction = true;
+                        if(!store.state.selectAction){
+                            store.state.selectAction = true;
                         }
                         this.listItems = allItems;
                     }
@@ -192,8 +198,8 @@
                         });
                         this.listItems = [];
                     }
-                    if(this.selectAction){
-                        this.selectAction = false;
+                    if(store.state.selectAction){
+                        store.state.selectAction = false;
                     }
                     this.listItems = [];
                     return this.selectedItems = this.getSelected;
@@ -201,32 +207,26 @@
             },
             // Get inputs and filter them out to search inside the menu list for any matchs
             filteredList() {
-                if(this.search.length > this.min_symbols){
+                if(store.state.search.length > store.state.min_symbols){
                     // A soft selection to sort out just the needed results
                     return this.selections.filter(item => {
-                        this.selectedItems = this.getSelected;
-                        return item.name.toLowerCase().includes(this.search.toLowerCase());
+                        store.state.selectedItems = this.getSelected;
+                        return item.name.toLowerCase().includes(store.state.search.toLowerCase());
                     })
                 } else {
                     // Return empty list in case of 0 results
-                    this.selectedItems = this.getSelected;
+                    store.state.selectedItems = this.getSelected;
                     return this.selections;
                 }
             },
             // Selected items
             getSelected(){
-                /*
-                    Check the length of each items list
-
-                    first case: return the length of all checked items
-                    second case: return the length of all checked items sorted by input search results
-                */
-                switch (this.listItems.length > 0){
-                    case true:
-                        return this.selectedItems = this.listItems.length;
-                    case false:
-                        return this.selectedItems = 0;
+                // Check the length of list items
+                let textOut = 'Ничего не выбрано';
+                if(this.listItems.length > 0){
+                    textOut = `Выбрано: ${this.listItems.length}`;
                 }
+                return textOut;
             },
             // Object contains all the selected items to send to Back-End server
             dataBaseObject (){
