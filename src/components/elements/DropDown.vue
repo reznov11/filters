@@ -73,7 +73,7 @@
             username: 'Нуждин Вячеслав' // Default app username
         },
         actions: {
-            generate(state) {
+            generate: state => {
                 // Generate random words
                 for (var i = 1; i < store.state.maxWords; i++){
                     let word = "";
@@ -88,13 +88,8 @@
                         }
                     )
                 }
-                this.selections = store.state.texts;
-                return this.selections;
-            }
-        },
-        getters: {
-            getWordsList: state => {
-                return state.selections;
+                store.state.selections = store.state.texts;
+                return store.state.selections;
             }
         }
     });
